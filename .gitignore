@@ -1,0 +1,31 @@
+# Ignore everything at the root by default
+/*
+
+# Keep repo config
+!/.gitignore
+!/.gitattributes
+!/CDriveRules.md
+
+# Allowlist ONLY the folders you want to curate (edit these)
+!/Projects/
+!/Docs/
+!/Scripts/
+!/Config/
+!/Users/Ajpad/Documents/
+!/Users/Ajpad/Desktop/
+
+# Block known huge/system areas (defense-in-depth)
+$RECYCLE.BIN/
+System Volume Information/
+pagefile.sys
+hiberfil.sys
+swapfile.sys
+Windows/
+Program Files/
+Program Files (x86)/
+ProgramData/
+Users/*/AppData/
+**/node_modules/
+**/.git/
+**/.cache/
+**/*.tmp
