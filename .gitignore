@@ -5,6 +5,7 @@
 !/.gitignore
 !/.gitattributes
 !/CDriveRules.md
+!/.github/
 
 # Allowlist ONLY the folders you want to curate (edit these)
 !/Projects/
