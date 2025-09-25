@@ -6,55 +6,6 @@ This is a **specialized drive audit repository** that tracks selective parts of 
 
 **Key Concept**: Instead of tracking a typical project structure, this repo monitors specific user folders and config directories on a Windows system while defensively excluding system files, large directories, and sensitive areas.
 
-## Critical Workflows
-
-### Safe Git Operations
-```bash
-# ALWAYS check what would be added before staging
-git status --porcelain
-git diff --name-only --cached
-
-# Use selective staging for large changesets
-git add -p    # Interactive staging
-git add --dry-run .   # Preview what would be added
-
-# Defensive status checking
-git clean -n -d      # Show what would be cleaned (never run without -n)
-```
-
-### Repository Maintenance
-```bash
-# Check repository size and object count
-git count-objects -vH
-du -sh .git/
-
-# Audit what's actually being tracked
-git ls-files | head -20
-git ls-files --cached --others --exclude-standard
-
-# Monitor for large files that shouldn't be tracked
-git ls-files -s | awk '$3 > 1048576 {print $3/1048576 "MB", $4}' | sort -rn
-
-# Check for potential credential exposure
-git log --all --full-history -- "**/id_rsa*" "**/.*key*" "**/.env*"
-```
-
-## Windows-Specific Considerations
-
-### PowerShell Integration
-- Use `git status` in PowerShell with UTF-8 encoding: `$OutputEncoding = [Text.UTF8Encoding]::UTF8`
-- Watch for Windows path separator issues in scripts
-- Be aware of Windows file locking when Git operations touch active files
-- Consider PowerShell execution policy when running scripts from tracked directories
-
-### File System Patterns
-- `.gitignore` uses both forward and backslash patterns for Windows compatibility
-- System files (pagefile.sys, hiberfil.sys) are explicitly blocked
-- AppData directories are defensively excluded to prevent credential exposure
-- Junction points and symbolic links require careful handling to avoid infinite loops
-
-## Project-Specific Patterns
-
 ### Defensive Exclusion Strategy
 ```gitignore
 # Block everything by default
@@ -64,6 +15,9 @@ git log --all --full-history -- "**/id_rsa*" "**/.*key*" "**/.env*"
 !/Projects/
 !/Docs/
 !/Scripts/
+!/Config/
+!/Users/Ajpad/Documents/
+!/Users/Ajpad/Desktop/
 
 # Defense-in-depth blocking
 Windows/
@@ -72,78 +26,117 @@ Program Files/
 **/node_modules/
 ```
 
-### Allowlisted Directories
-- `Projects/` - Development work
-- `Docs/` - Documentation and notes  
-- `Scripts/` - Automation and utility scripts
-- `Config/` - Configuration files
-- `Users/Ajpad/Documents/` - User documents
-- `Users/Ajpad/Desktop/` - Desktop files
+## Essential Daily Operations
 
-## Common Pitfalls
-
-1. **Never run `git add .` blindly** - could stage system files or large directories
-2. **Always verify `.gitignore` changes** - incorrect patterns could expose sensitive data
-3. **Monitor repo size growth** - unintended tracking of large files is expensive
-4. **Check for credential exposure** - Windows stores credentials in predictable locations
-5. **Beware of symbolic links and junctions** - Windows shortcuts can cause unintended tracking
-6. **Watch for file attribute changes** - NTFS attributes like hidden/system can affect Git behavior
-7. **Be cautious with line endings** - Mixed CRLF/LF can cause large diffs in Windows files
-
-## Emergency Recovery Procedures
-
-### If System Files Are Accidentally Staged
+### Safe Git Operations (CRITICAL)
 ```bash
-# Remove from staging without affecting working directory
+# ALWAYS check what would be added before staging
+git status --porcelain
+git diff --name-only --cached
+git add --dry-run .   # Preview what would be added
+
+# Use selective staging for large changesets
+git add -p    # Interactive staging
+git clean -n -d      # Show what would be cleaned (never run without -n)
+
+# Test .gitignore changes
+git check-ignore -v <path>
+
+# Verify tracking scope
+git ls-files --cached --others --exclude-standard | head -20
+```
+
+### Repository Health Monitoring
+```bash
+# Monitor repository size and performance
+git count-objects -vH && du -sh .git/
+
+# Detect large files (>1MB) that shouldn't be tracked
+git ls-files -s | awk '$3 > 1048576 {print $3/1048576 "MB", $4}' | sort -rn
+
+# Security audit - check for credential exposure
+git log --all --full-history -- "**/id_rsa*" "**/.*key*" "**/.env*"
+
+# Find large objects in history
+git rev-list --objects --all | git cat-file --batch-check='%(objecttype) %(objectname) %(objectsize) %(rest)' | grep '^blob' | sort -nr -k3 | head -10
+```
+
+## Windows-Specific Considerations
+
+### PowerShell Integration & File System
+- **UTF-8 encoding**: `$OutputEncoding = [Text.UTF8Encoding]::UTF8` before Git operations
+- **Path separators**: `.gitignore` uses both forward and backslash patterns for Windows compatibility
+- **File locking**: Git operations may conflict with Windows services and applications
+- **NTFS attributes**: Hidden/system file attributes can affect Git behavior unexpectedly
+- **Junction points & symbolic links**: Can cause infinite loops - handle with extreme care
+- **Line endings**: Mixed CRLF/LF can cause massive diffs - configure `.gitattributes` appropriately
+- **PowerShell execution policy**: Consider impact when running scripts from tracked directories
+
+### Performance & System Integration
+- **Large directory scanning**: Git operations scan entire C:\ drive structure - expect delays
+- **Windows Search indexer**: May compete with Git file scanning - consider exclusions
+- **Network drives/UNC paths**: Can cause unexpected behavior and timeouts
+- **File system watchers**: Real-time monitoring tools may interfere with Git performance
+- **Antivirus software**: Real-time scanning can interfere with Git operations
+- **Administrator permissions**: Some files may require elevated permissions for proper tracking
+
+## Critical Safety Measures
+
+### Never Do This
+1. **`git add .` blindly** - Could stage system files or massive directories
+2. **Modify `.gitignore` without testing** - Could expose sensitive data or system files  
+3. **Ignore repository size growth** - Unintended large file tracking is expensive
+4. **Work without checking disk space** - C:\ drive space affects all Git operations
+
+### Emergency Recovery Procedures
+
+#### If System Files Are Accidentally Staged
+```bash
+# Remove from staging immediately
 git reset HEAD -- Windows/ "Program Files/" ProgramData/
 
-# Use .gitignore to double-check exclusions
+# Verify exclusions work
 git check-ignore -v Windows/System32/kernel32.dll
 
-# If already committed, use filter-branch (DANGEROUS - backup first)
+# If already committed (DANGEROUS - backup first)
 # git filter-branch --index-filter 'git rm --cached --ignore-unmatch Windows/*' HEAD
 ```
 
-### If Repository Becomes Too Large
+#### If Repository Becomes Oversized
 ```bash
-# Find large objects in history
-git rev-list --objects --all | git cat-file --batch-check='%(objecttype) %(objectname) %(objectsize) %(rest)' | grep '^blob' | sort -nr -k3 | head -10
+# Identify problem files/paths
+git rev-list --objects --all | git cat-file --batch-check='%(objecttype) %(objectname) %(objectsize) %(rest)' | grep '^blob' | sort -nr -k3
 
-# Use git-filter-repo for complex cleanup (external tool)
+# Use git-filter-repo for cleanup (external tool required)
 # git-filter-repo --path-glob '*.iso' --invert-paths
 ```
 
-## Integration Points
+## Integration Points & Dependencies
 
-- **Windows File System**: Direct integration with NTFS permissions and file attributes
-- **User Environment**: Tracks personal workspace and configuration changes
-- **System State**: Monitors configuration drift and manual changes outside version control
+- **Windows File System**: Direct NTFS permissions and file attribute integration
+- **User Environment**: Tracks personal workspace and configuration drift  
+- **System State**: Monitors manual changes outside version control
 - **Windows Services**: May interact with files locked by running services
-- **Antivirus Software**: Real-time scanning can interfere with Git operations
+- **Development Tools**: IDEs and build systems may create temporary files in tracked areas
 
-## Key Files to Understand
+## Key Configuration Files
 
-- `.gitignore` - The inverse allowlist pattern that defines what gets tracked
-- `CDriveRules.md` - Documentation of allowlist rules and rationale (if present)
-- Any PowerShell scripts in tracked directories that automate Git operations
-- `.gitattributes` - Controls line ending handling and file type detection
-- Git hooks (if present) - May contain automation for this unique setup
+- **`.gitignore`** - The inverse allowlist pattern defining what gets tracked
+- **`.gitattributes`** - Controls line ending handling and file type detection  
+- **`CDriveRules.md`** - Documents allowlist rules and rationale (create if missing)
+- **Git hooks** - May contain automation specific to this unique setup
+- **PowerShell scripts** - Automation tools in tracked directories
 
-## Working with This Repository
+## Working Principles
 
-When making changes:
-1. Understand you're working in C:\ root, not a typical project directory
-2. Use relative paths carefully - they resolve from C:\ 
-3. Test `.gitignore` changes with `git check-ignore -v <path>` 
-4. Regularly audit tracked files to prevent unintended exposure
-5. **Always check disk space** - C:\ drive space affects Git operations
-6. **Run as administrator when needed** - Some files may require elevated permissions
+**Remember**: You're working in C:\ root, not a typical project directory.
 
-## Performance Considerations
+1. **Paths resolve from C:\** - Use relative paths extremely carefully
+2. **Always preview changes** - Use `--dry-run` and `git status --porcelain`  
+3. **Test `.gitignore` changes** - Use `git check-ignore -v <path>` before committing
+4. **Regular audits** - Monitor tracked files to prevent unintended exposure
+5. **Check disk space** - C:\ drive capacity affects all Git operations
+6. **Run as administrator when needed** - Some system files require elevation
+7. **Backup before major changes** - This setup is unique and mistakes are costly
 
-- **Large directory scanning**: Git operations scan entire C:\ drive structure
-- **Windows indexing conflicts**: Search indexer may compete with Git file scanning
-- **Network drives**: UNC paths and mapped drives can cause unexpected behavior
-- **File system watchers**: Tools monitoring C:\ may impact Git performance
-
-This unique architecture requires careful, defensive Git practices to maintain security and performance while providing visibility into selective file system changes.
+This architecture requires defensive Git practices to maintain security and performance while providing visibility into selective Windows file system changes.
