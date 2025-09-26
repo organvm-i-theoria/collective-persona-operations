@@ -119,11 +119,66 @@ git rev-list --objects --all | git cat-file --batch-check='%(objecttype) %(objec
 - **Windows Services**: May interact with files locked by running services
 - **Development Tools**: IDEs and build systems may create temporary files in tracked areas
 
+## Organizational Standards & Cross-Platform Consistency
+
+### File & Folder Organization Principles
+```
+# Recommended directory structure for tracked areas
+Projects/
+├── Active/           # Current work projects
+├── Archive/          # Completed/old projects
+├── Templates/        # Project templates and boilerplates
+└── Resources/        # Shared resources across projects
+
+Docs/
+├── Personal/         # Personal notes and documents
+├── Reference/        # Documentation and manuals
+├── Templates/        # Document templates
+└── Archive/          # Old/completed documentation
+
+Scripts/
+├── PowerShell/       # Windows-specific scripts
+├── Cross-Platform/   # Scripts that work on multiple OS
+├── Automation/       # Scheduled/automated scripts
+└── Utilities/        # One-off utility scripts
+
+Config/
+├── Applications/     # App-specific configurations
+├── Development/      # IDE, editor, and dev tool configs
+├── System/          # System-level configurations
+└── Backups/         # Configuration backups
+```
+
+### Cross-Platform Organizational Standards
+- **Use consistent naming**: `kebab-case` for folders, `PascalCase` for projects
+- **Avoid platform-specific characters**: No `<>:"|?*` in filenames
+- **Standardize date formats**: Use `YYYY-MM-DD` format for dated files
+- **Create README.md** in each major directory explaining its purpose
+- **Use consistent file extensions**: `.md` for docs, `.ps1` for PowerShell, `.sh` for Unix scripts
+
+### Sorting & Classification Rules
+```bash
+# Use these patterns to maintain organization
+# By project type
+/Projects/Active/web-development/
+/Projects/Active/data-analysis/
+/Projects/Active/automation/
+
+# By date for archives
+/Projects/Archive/2024/project-name/
+/Docs/Archive/2024-01/meeting-notes/
+
+# By category for resources
+/Scripts/Automation/daily-backups/
+/Scripts/Utilities/file-organizers/
+```
+
 ## Key Configuration Files
 
 - **`.gitignore`** - The inverse allowlist pattern defining what gets tracked
 - **`.gitattributes`** - Controls line ending handling and file type detection  
 - **`CDriveRules.md`** - Documents allowlist rules and rationale (create if missing)
+- **`_ORGANIZE.md`** - Organizational standards and filing rules (create for consistency)
 - **Git hooks** - May contain automation specific to this unique setup
 - **PowerShell scripts** - Automation tools in tracked directories
 
@@ -138,5 +193,30 @@ git rev-list --objects --all | git cat-file --batch-check='%(objecttype) %(objec
 5. **Check disk space** - C:\ drive capacity affects all Git operations
 6. **Run as administrator when needed** - Some system files require elevation
 7. **Backup before major changes** - This setup is unique and mistakes are costly
+8. **Maintain organization standards** - Use consistent naming and structure across platforms
+9. **Document your filing system** - Create `_ORGANIZE.md` files to explain folder purposes
 
-This architecture requires defensive Git practices to maintain security and performance while providing visibility into selective Windows file system changes.
+## Organizational Automation
+
+### Recommended Scripts for File Management
+```powershell
+# PowerShell script to organize files by date
+# Scripts/Automation/organize-by-date.ps1
+Get-ChildItem "C:\Docs\Unsorted" | 
+    Where-Object { $_.CreationTime -lt (Get-Date).AddDays(-30) } |
+    ForEach-Object { 
+        $year = $_.CreationTime.Year
+        $month = $_.CreationTime.ToString("MM")
+        $destPath = "C:\Docs\Archive\$year-$month"
+        New-Item -ItemType Directory -Path $destPath -Force
+        Move-Item $_.FullName $destPath
+    }
+```
+
+### Cross-Platform File Naming Validation
+```bash
+# Check for problematic filenames across platforms
+git ls-files | grep -E '[<>:"|?*]|[\s]$' | head -20
+```
+
+This architecture requires defensive Git practices to maintain security and performance while providing visibility into selective Windows file system changes with consistent organizational standards.
