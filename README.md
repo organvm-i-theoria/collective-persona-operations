@@ -274,7 +274,7 @@ A grant application that references work across multiple organs must present a u
 |-----------|-------------|
 | [`a-recursive-root`](https://github.com/organvm-i-theoria/a-recursive-root) | The AI Council determines *what* to say; Collective Persona Operations determines *how* to say it. Complementary systems. |
 | [`organon-noumenon`](https://github.com/organvm-i-theoria/organon-noumenon--ontogenetic-morphe) | Provides the ontological categories that structure persona identity. Persona types map to ontological categories. |
-| [`recursive-engine`](https://github.com/organvm-i-theoria/recursive-engine) | The recursive structures that generate emergent properties also apply to persona: a persona is a recursive pattern of voice applied across contexts. |
+| [`recursive-engine`](https://github.com/organvm-i-theoria/recursive-engine--generative-entity) | The recursive structures that generate emergent properties also apply to persona: a persona is a recursive pattern of voice applied across contexts. |
 | [`public-process`](https://github.com/organvm-v-logos/public-process) | Primary consumer of composed personas. ORGAN-V essays are the most visible test of cross-register coherence. |
 | [`agentic-titan`](https://github.com/organvm-iv-taxis/agentic-titan) | The orchestration layer that routes tasks to agents. Persona specs will be injected at the routing layer. |
 
