@@ -4,6 +4,14 @@
 
 # Collective Persona Operations
 
+[![CI](https://github.com/organvm-i-theoria/collective-persona-operations/actions/workflows/ci.yml/badge.svg)](https://github.com/organvm-i-theoria/collective-persona-operations/actions/workflows/ci.yml)
+[![Coverage](https://img.shields.io/badge/coverage-pending-lightgrey)](https://github.com/organvm-i-theoria/collective-persona-operations)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/organvm-i-theoria/collective-persona-operations/blob/main/LICENSE)
+[![Organ I](https://img.shields.io/badge/Organ-I%20Theoria-8B5CF6)](https://github.com/organvm-i-theoria)
+[![Status](https://img.shields.io/badge/status-active-brightgreen)](https://github.com/organvm-i-theoria/collective-persona-operations)
+[![Markdown](https://img.shields.io/badge/lang-Markdown-informational)](https://github.com/organvm-i-theoria/collective-persona-operations)
+
+
 **A theoretical and operational framework for managing coherent identity across multi-agent systems, multi-organ institutions, and multi-register creative practices — treating persona not as performance but as a composable epistemic interface.**
 
 > "The self is not a point but a pattern of points." — Gregory Bateson
