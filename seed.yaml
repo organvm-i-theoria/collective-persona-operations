@@ -1,7 +1,6 @@
 # seed.yaml — Automation Contract for organvm-i-theoria/collective-persona-operations
 # Schema: seed/v1.0
-# Generated: 2026-02-12 (AUTONOMY Sprint)
-# Category: standard
+# Updated: AUTONOMY Sprint Phase E (orphan resolution)
 
 schema_version: "1.0"
 organ: I
@@ -13,15 +12,20 @@ metadata:
   implementation_status: PRODUCTION
   tier: standard
   promotion_status: LOCAL
-  last_validated: "2026-02-11"
-  generated: "2026-02-12"
-  sprint: "AUTONOMY"
+  last_validated: 2026-02-11
+  generated: 2026-02-12
+  sprint: AUTONOMY
 
 agents:
   - name: ci
     trigger: on_push
     workflow: .github/workflows/ci-python.yml
     description: "Continuous integration pipeline"
+
+produces:
+  - type: theory-artifact
+    description: "Theoretical framework, ontological model, or epistemological tool"
+    consumers: [ORGAN-IV]
 
 subscriptions:
   - event: governance.updated
